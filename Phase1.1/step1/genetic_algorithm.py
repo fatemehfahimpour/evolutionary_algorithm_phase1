@@ -102,4 +102,71 @@ def initialize_population(df_clean, pop_size=50, low=0, high=10):
     return population, fitness_values
 
 
+def run_ga(df_clean,
+           pop_size=50,
+           generations=100,
+           selection_method="tournament",
+           crossover_method="arithmetic",
+           crossover_rate=0.9,
+           mutation_rate=0.05,
+           tournament_size=3):
+    # first population
+    population, fitness_values = initialize_population(df_clean, pop_size)
 
+    for gen in range(generations):
+
+        new_population = []
+        new_fitness = []
+
+        while len(new_population) < pop_size:
+
+            # Selection
+            if selection_method == "tournament":
+                parent1 = tournament_selection(population, fitness_values, tournament_size)
+                parent2 = tournament_selection(population, fitness_values, tournament_size)
+
+            elif selection_method == "roulette":
+                parent1 = roulette_wheel_selection(population, fitness_values)
+                parent2 = roulette_wheel_selection(population, fitness_values)
+
+            else:
+                raise ValueError("Invalid selection method")
+
+            # Crossover
+            if np.random.rand() < crossover_rate:
+
+                if crossover_method == "arithmetic":
+                    child1, child2 = arithmetic_crossover(parent1, parent2)
+
+                elif crossover_method == "uniform":
+                    child1, child2 = uniform_crossover(parent1, parent2)
+
+                else:
+                    raise ValueError("Invalid crossover method")
+
+            else:
+                child1, child2 = parent1[:], parent2[:]
+
+            # Mutation
+            child1 = inversion_mutation(child1, mutation_rate)
+            child2 = inversion_mutation(child2, mutation_rate)
+
+            # Fitness children
+            fit1 = fitness(df_clean, child1)
+            fit2 = fitness(df_clean, child2)
+
+            new_population.append(child1)
+            new_fitness.append(fit1)
+
+            if len(new_population) < pop_size:
+                new_population.append(child2)
+                new_fitness.append(fit2)
+
+        # new generation
+        population = new_population
+        fitness_values = new_fitness
+
+    # best chromosome
+    best_idx = np.argmax(fitness_values)
+
+    return population[best_idx], fitness_values[best_idx]
