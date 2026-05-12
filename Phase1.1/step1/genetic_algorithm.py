@@ -27,7 +27,6 @@ def roulette_wheel_selection(population, fitness_values):
     return population[selected_index]
 
 
-
 def tournament_selection(population, fitness_values, tournament_size=3):
     #یک گروه 3 تایی انتخاب میشه هر بار و از بین این گروه اونی که بهترین فیتنس را داره انتخاب میشه
     selected_indices = np.random.choice(
@@ -45,3 +44,33 @@ def tournament_selection(population, fitness_values, tournament_size=3):
     winner_index = selected_indices[np.argmax(tournament_fitness)]
 
     return population[winner_index]
+
+
+def uniform_crossover(parent1, parent2, crossover_rate=0.5):
+    child1 = []
+    child2 = []
+
+    for gene1, gene2 in zip(parent1, parent2):
+
+        if np.random.rand() < crossover_rate:
+            child1.append(gene1)
+            child2.append(gene2)
+        else:
+            child1.append(gene2)
+            child2.append(gene1)
+
+    return child1, child2
+
+
+def arithmetic_crossover(parent1, parent2, alpha=None):
+
+    parent1 = np.array(parent1)
+    parent2 = np.array(parent2)
+
+    if alpha is None:
+        alpha = np.random.rand()
+
+    child1 = alpha * parent1 + (1 - alpha) * parent2
+    child2 = alpha * parent2 + (1 - alpha) * parent1
+
+    return child1.tolist(), child2.tolist()
