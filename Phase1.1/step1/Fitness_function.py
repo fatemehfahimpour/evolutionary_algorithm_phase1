@@ -64,7 +64,7 @@ def calculate_RX(a_norm_coefficients, b_norm_coefficients):
     return r_x
 
 
-def normalize_coefficients(coefficients, epsilon=1e-12):
+def normalize_coefficients(coefficients, epsilon=1e-6):
     coefficients = np.array(coefficients, dtype=float)
     total = np.sum(coefficients) + epsilon
     if total < epsilon:
