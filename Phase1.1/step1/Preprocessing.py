@@ -82,7 +82,7 @@ def calculate_quality_scores(df):
             return 0.4
         return 0
 
-    L_min, L_sat = 900, 900
+    L_min, L_sat = 30, 900
 
     df['S_T'] = df['T_in'].apply(S_T)
     df['S_H'] = df['H_in'].apply(S_H)
