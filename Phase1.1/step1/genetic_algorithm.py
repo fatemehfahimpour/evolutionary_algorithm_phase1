@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from Fitness_function import fitness
+from step1.Fitness_function import fitness
 
 
 def roulette_wheel_selection(population, fitness_values):
