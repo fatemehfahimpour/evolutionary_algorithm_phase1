@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from Fitness_function import fitness
 
 
@@ -109,14 +110,19 @@ def run_ga(df_clean,
            crossover_method="arithmetic",
            crossover_rate=0.9,
            mutation_rate=0.05,
-           tournament_size=3):
+           tournament_size=3,
+           plot_convergence=True):
     # first population
     population, fitness_values = initialize_population(df_clean, pop_size)
+    best_fitness_history = []
+    avg_fitness_history = []
 
     for gen in range(generations):
-
+        best_fitness_history.append(max(fitness_values))
+        avg_fitness_history.append(np.mean(fitness_values))
         new_population = []
         new_fitness = []
+
 
         while len(new_population) < pop_size:
 
@@ -168,5 +174,14 @@ def run_ga(df_clean,
 
     # best chromosome
     best_idx = np.argmax(fitness_values)
+    if plot_convergence:
+        plt.figure(figsize=(10, 5))
+        plt.plot(best_fitness_history, label='Best Fitness', color='blue', linewidth=2)
+        plt.xlabel('Generation')
+        plt.ylabel('Fitness')
+        plt.title('Convergence Plot of Genetic Algorithm')
+        plt.legend()
+        plt.grid(True, alpha=0.3)
+        plt.show()
 
-    return population[best_idx], fitness_values[best_idx]
+    return population[best_idx], fitness_values[best_idx],best_fitness_history,avg_fitness_history
