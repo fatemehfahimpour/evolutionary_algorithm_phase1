@@ -10,7 +10,6 @@ from step1.genetic_algorithm import uniform_crossover
 from step1.Fitness_function import calculate_f2_score
 from step1.genetic_algorithm import arithmetic_crossover
 from step1.genetic_algorithm import roulette_wheel_selection
-
 from step1.Preprocessing import get_k_w
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -54,9 +53,6 @@ def generate_population(pop_size):
 def initialize_population(pop_size):
     return [generate_individual() for _ in range(pop_size)]
 
-
-def fitness_stage2():
-    return
 
 
 def inversion_mutation(chromosome, mutation_rate=0.05, low=0, high=10):
@@ -124,4 +120,141 @@ def run_ga_stage2(pop_size=80, generations=150,
     return best_individual, best_fitness, best_fitness_history, avg_fitness_history
 
 
+def realism_penalty(individual):
+
+    # chromosome:
+    # [T_in, T_out, H_in, L, N, CO2, weather...]
+
+    means = [24, 20, 60, 500, 15, 700]
+    stds  = [3, 10, 10, 200, 8, 300]
+
+    values = individual[:6]
+
+    penalty = 0.0
+
+    for x, mu, sigma in zip(values, means, stds):
+
+        if sigma == 0:
+            sigma = 1e-6
+
+        penalty += ((x - mu) / sigma) ** 2
+
+    return penalty
+
+def constraint_penalty(individual):
+
+    T_in, T_out, H_in, L, N, CO2 = individual[:6]
+
+    penalty = 0
+    if T_in < 18 or T_in > 30:
+        penalty += 100
+
+    if T_out < -5 or T_out > 45:
+        penalty += 100
+
+    if H_in < 20 or H_in > 80:
+        penalty += 100
+
+    if L < 100 or L > 1000:
+        penalty += 100
+
+    if N < 1 or N > 30:
+        penalty += 150
+
+    if CO2 < 300 or CO2 > 1700:
+        penalty += 150
+
+    return penalty
+
+def environment_score(individual):
+
+    T_in, T_out, H_in, L, N, CO2 = individual[:6]
+
+    score = 0
+    if 22 <= T_in <= 26:
+        score += 30
+    if 50 <= H_in <= 70:
+        score += 25
+    if 400 <= CO2 <= 1000:
+        score += 25
+    if 300 <= L <= 800:
+        score += 20
+    return score
+
+
+def reward_function(individual):
+
+    T_in, T_out, H_in, L, N, CO2 = individual[:6]
+    reward = 0
+    # مصرف انرژی کمتر → پاداش بیشتر
+    try:
+
+        weather_vector = individual[6:]
+
+        weather_labels = [
+            "night",
+            "sunny",
+            "cloudy",
+            "humid",
+            "rainy",
+            "stormy",
+            "cold"
+        ]
+
+        weather_idx = np.argmax(weather_vector)
+
+        weather = weather_labels[weather_idx]
+
+        k_w = get_k_w(weather)
+
+        energy = (
+            k_w *
+            (
+                0.8 * abs(T_in - T_out)
+                + 12 * np.log(1 + N)
+                + 0.02 * H_in
+            )
+            + 6 * np.log(1 + L)
+            + 2 * np.log(1 + CO2)
+        )
+
+    except:
+        energy = 500
+    if energy < 200:
+        reward += 25
+
+    elif energy < 350:
+        reward += 10
+    if 23 <= T_in <= 25:
+        reward += 10
+
+    if 55 <= H_in <= 65:
+        reward += 10
+
+    return reward
+
+
+def fitness_stage2(
+    individual,
+    lambda_real=0.5,
+    real_penalty=True
+):
+
+    score = environment_score(individual)
+    reward = reward_function(individual)
+    realism = 0
+
+    if real_penalty:
+        realism = realism_penalty(individual)
+
+    constraint = constraint_penalty(individual)
+
+    fitness = (
+        0.6 * score
+        + 0.4 * reward
+        - lambda_real * realism
+        - constraint
+    )
+
+    return fitness
 # population = generate_population(1000)
