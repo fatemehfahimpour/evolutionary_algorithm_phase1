@@ -12,6 +12,7 @@ from step1.genetic_algorithm import arithmetic_crossover
 from step1.genetic_algorithm import roulette_wheel_selection
 from step1.Preprocessing import get_k_w
 
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_PATH = BASE_DIR / 'step1' / 'data' / '1_26336110128.csv'
 
@@ -107,16 +108,6 @@ def run_ga_stage2(pop_size=80, generations=150,
     best_idx = np.argmax(fitness_vals)
     best_individual = population[best_idx]
     best_fitness = fitness_vals[best_idx]
-    if plot_convergence:
-        plt.figure(figsize=(12,5))
-        plt.plot(best_fitness_history, label='Best Fitness')
-        plt.plot(avg_fitness_history, label='Avg Fitness')
-        plt.xlabel('Generation')
-        plt.ylabel('Fitness')
-        plt.title('Convergence - Stage2 GA')
-        plt.legend()
-        plt.grid()
-        plt.show()
     return best_individual, best_fitness, best_fitness_history, avg_fitness_history
 
 
@@ -259,4 +250,82 @@ def fitness_stage2(
 
 
     return fitness
+best_individual, best_fitness, best_hist, avg_hist = run_ga_stage2()
+print("Best Fitness:", best_fitness)
+print("Best Individual:", best_individual)
+
+
+best1, _, best_hist1, avg_hist1 = run_ga_stage2(
+    selection_method='tournament',
+    crossover_method='arithmetic'
+)
+
+best2, _, best_hist2, avg_hist2 = run_ga_stage2(
+    selection_method='tournament',
+    crossover_method='uniform'
+)
+
+best3, _, best_hist3, avg_hist3 = run_ga_stage2(
+    selection_method='roulette',
+    crossover_method='arithmetic'
+)
+
+best4, _, best_hist4, avg_hist4 = run_ga_stage2(
+    selection_method='roulette',
+    crossover_method='uniform'
+)
+
+
+fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+
+
+axes[0,0].plot(best_hist1, label='Best Fitness')
+axes[0,0].plot(avg_hist1, label='Average Fitness')
+axes[0,0].set_title("Tournament + Arithmetic Crossover")
+
+axes[0,0].set_xlabel("Generation (Iteration of Genetic Algorithm)")
+axes[0,0].set_ylabel("Fitness Value (Objective Function Score)")
+
+axes[0,0].legend()
+axes[0,0].grid()
+
+
+
+axes[0,1].plot(best_hist2, label='Best Fitness')
+axes[0,1].plot(avg_hist2, label='Average Fitness')
+axes[0,1].set_title("Tournament + Uniform Crossover")
+
+axes[0,1].set_xlabel("Generation (Iteration of Genetic Algorithm)")
+axes[0,1].set_ylabel("Fitness Value (Objective Function Score)")
+
+axes[0,1].legend()
+axes[0,1].grid()
+
+
+
+axes[1,0].plot(best_hist3, label='Best Fitness')
+axes[1,0].plot(avg_hist3, label='Average Fitness')
+axes[1,0].set_title("Roulette Wheel + Arithmetic Crossover")
+
+axes[1,0].set_xlabel("Generation (Iteration of Genetic Algorithm)")
+axes[1,0].set_ylabel("Fitness Value (Objective Function Score)")
+
+axes[1,0].legend()
+axes[1,0].grid()
+
+
+
+axes[1,1].plot(best_hist4, label='Best Fitness')
+axes[1,1].plot(avg_hist4, label='Average Fitness')
+axes[1,1].set_title("Roulette Wheel + Uniform Crossover")
+
+axes[1,1].set_xlabel("Generation (Iteration of Genetic Algorithm)")
+axes[1,1].set_ylabel("Fitness Value (Objective Function Score)")
+
+axes[1,1].legend()
+axes[1,1].grid()
+
+plt.tight_layout()
+plt.show()
+
 # population = generate_population(1000)
