@@ -256,5 +256,6 @@ def fitness_stage2(
         - constraint
     )
 
+
     return fitness
 # population = generate_population(1000)
