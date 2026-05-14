@@ -257,5 +257,6 @@ def fitness_stage2(
     )
 
 
+
     return fitness
 # population = generate_population(1000)
