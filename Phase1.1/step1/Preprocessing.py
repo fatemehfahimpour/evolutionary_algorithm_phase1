@@ -94,7 +94,7 @@ def calculate_quality_scores(df):
     df.loc[total_light > L_sat, 'S_L'] = 0.7
 
     N_max = 25
-    df['P_N'] = df['N'].apply(lambda N: max(0, N - N_max))
+    df['P_N'] = df['N'].apply(lambda N: max(0, abs(N - N_max)))
     return df
 
 

@@ -103,15 +103,8 @@ def initialize_population(df_clean, pop_size=50, low=0, high=10):
     return population, fitness_values
 
 
-def run_ga(df_clean,
-           pop_size=50,
-           generations=100,
-           selection_method="tournament",
-           crossover_method="arithmetic",
-           crossover_rate=0.9,
-           mutation_rate=0.05,
-           tournament_size=3,
-           plot_convergence=True):
+def run_ga(df_clean, pop_size=50, generations=100, selection_method="tournament", crossover_method="arithmetic",
+           crossover_rate=0.9, mutation_rate=0.05, tournament_size=3, plot_convergence=True):
     # first population
     population, fitness_values = initialize_population(df_clean, pop_size)
     best_fitness_history = []
@@ -122,7 +115,6 @@ def run_ga(df_clean,
         avg_fitness_history.append(np.mean(fitness_values))
         new_population = []
         new_fitness = []
-
 
         while len(new_population) < pop_size:
 
@@ -184,4 +176,4 @@ def run_ga(df_clean,
         plt.grid(True, alpha=0.3)
         plt.show()
 
-    return population[best_idx], fitness_values[best_idx],best_fitness_history,avg_fitness_history
+    return population[best_idx], fitness_values[best_idx], best_fitness_history, avg_fitness_history
