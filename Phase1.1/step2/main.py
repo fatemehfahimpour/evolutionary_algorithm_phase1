@@ -3,7 +3,6 @@ from pathlib import Path
 from step1.Preprocessing import get_preprocessed_data
 from step1.genetic_algorithm import run_ga as run_ga_stage1
 from step1.Fitness_function import normalize_coefficients
-from Fitness import fitness
 from GA import run_ga
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -16,7 +15,6 @@ bj = best_chrom[6:]
 a_norm = normalize_coefficients(ai)
 b_norm = normalize_coefficients(bj)
 
-fitness_func = fitness(a_norm, b_norm,df_clean)
 
 configs = [
     {"name": "A: Tournament + Arithmetic + mut=0.05",
@@ -33,7 +31,7 @@ results = []
 
 for cfg in configs:
     print(f"\n{cfg['name']}")
-    best_ind, best_fit, best_hist, avg_hist = run_ga(
+    best_ind, best_fit, best_hist, avg_hist = run_ga(a_norm , b_norm,
         pop_size=80,
         generations=150,
         selection_method=cfg['selection'],
@@ -41,7 +39,6 @@ for cfg in configs:
         crossover_rate=0.9,
         mutation_rate=cfg['mut'],
         tournament_size=3,
-        fitness_func=fitness_func,
         plot_convergence=False
     )
     results.append({

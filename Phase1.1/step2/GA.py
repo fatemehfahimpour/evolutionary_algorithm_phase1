@@ -8,6 +8,7 @@ from step1.genetic_algorithm import (
     arithmetic_crossover,
     roulette_wheel_selection
 )
+from step2.fitness_function import *
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_PATH = BASE_DIR / 'step1' / 'data' / '1_26336110128.csv'
@@ -39,19 +40,29 @@ def initialize_population():
 def evaluate_population(pop_size):
     return [initialize_population() for _ in range(pop_size)]
 
+
 def gaussian_mutation(individual, mutation_rate=0.05):
     mutated = individual.copy()
     for i in range(9):
         if random.random() < mutation_rate:
-            if i == 0: low, high = 18, 30      # T_in
-            elif i == 1: low, high = 0, 40    # T_out
-            elif i == 2: low, high = 20, 80    # H_in
-            elif i == 3: low, high = 100, 900   # L
-            elif i == 4: low, high = 1, 30     # N
-            elif i == 5: low, high = 400, 1500 # CO2
-            elif i == 6: low, high =df_clean['Wind'].min() ,  df_clean['Wind'].max()    # Wind
-            elif i == 7: low, high = df_clean['Solar'].min(), df_clean['Solar'].max()   # Solar
-            else: low, high = df_clean['H_out'].min(), df_clean['H_out'].max()           # H_out
+            if i == 0:
+                low, high = 18, 30  # T_in
+            elif i == 1:
+                low, high = 0, 40  # T_out
+            elif i == 2:
+                low, high = 20, 80  # H_in
+            elif i == 3:
+                low, high = 100, 900  # L
+            elif i == 4:
+                low, high = 1, 30  # N
+            elif i == 5:
+                low, high = 400, 1500  # CO2
+            elif i == 6:
+                low, high = df_clean['Wind'].min(), df_clean['Wind'].max()  # Wind
+            elif i == 7:
+                low, high = df_clean['Solar'].min(), df_clean['Solar'].max()  # Solar
+            else:
+                low, high = df_clean['H_out'].min(), df_clean['H_out'].max()  # H_out
             delta = np.random.normal(0, (high - low) * 0.05)
             mutated[i] += delta
             if i == 4:  # N صحیح
@@ -60,21 +71,39 @@ def gaussian_mutation(individual, mutation_rate=0.05):
                 mutated[i] = np.clip(mutated[i], low, high)
 
     if random.random() < mutation_rate:
-        new_idx = random.randint(0, len(WEATHER_LIST)-1)
-        mutated[9:] = [0]*len(WEATHER_LIST)
-        mutated[9+new_idx] = 1
+        new_idx = random.randint(0, len(WEATHER_LIST) - 1)
+        mutated[9:] = [0] * len(WEATHER_LIST)
+        mutated[9 + new_idx] = 1
     return mutated
 
-def run_ga(pop_size=80, generations=150,
+
+
+def compute_objective_ranges(population, a, b):
+    f1_vals = [f1_score(ch, a) for ch in population]
+    f2_vals = [f2_score(ch, b) for ch in population]
+
+    F1_min = min(f1_vals)
+    F1_max = max(f1_vals)
+    F2_min = min(f2_vals)
+    F2_max = max(f2_vals)
+
+    return F1_min, F1_max, F2_min, F2_max
+
+
+
+def run_ga(a , b ,pop_size=80, generations=150,
            selection_method='tournament', crossover_method='arithmetic',
            crossover_rate=0.9, mutation_rate=0.05, tournament_size=3,
-           lambda_real=0.0, real_penalty=None, fitness_func=None,
+           lambda_real=0.0, real_penalty=None,
            plot_convergence=False):
-    if fitness_func is None:
-        raise ValueError("error")
 
     population = evaluate_population(pop_size)
-    fitness_vals = [fitness_func(ind, lambda_real, real_penalty) for ind in population]
+    F1_min, F1_max, F2_min, F2_max = compute_objective_ranges(population , a , b)
+    fitness_vals = [
+        fitness_function(ind, a, b, F1_min, F1_max, F2_min, F2_max)
+        for ind in population
+    ]
+
     best_fitness_history = []
     avg_fitness_history = []
 
@@ -103,8 +132,8 @@ def run_ga(pop_size=80, generations=150,
             c1 = gaussian_mutation(c1, mutation_rate)
             c2 = gaussian_mutation(c2, mutation_rate)
 
-            fit1 = fitness_func(c1, lambda_real, real_penalty)
-            fit2 = fitness_func(c2, lambda_real, real_penalty)
+            fit1 = fitness_function(c1 , a, b, F1_min, F1_max, F2_min, F2_max)
+            fit2 = fitness_function(c2, a, b, F1_min, F1_max, F2_min, F2_max)
 
             new_pop.append(c1)
             new_fit.append(fit1)
