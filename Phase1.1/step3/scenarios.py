@@ -1,4 +1,3 @@
-
 SCENARIOS = {
     'scenario_1': {
         'id': 1,
@@ -193,7 +192,6 @@ def print_scenarios_table():
 
 
 def get_scenarios_for_team2():
-
     scenarios_list = []
 
     for key, sc in SCENARIOS.items():
@@ -236,4 +234,3 @@ def get_z_matrix():
 
 if __name__ == "__main__":
     print_scenarios_table()
-

@@ -31,7 +31,7 @@ bj = best_chrom[6:]
 a_norm = normalize_coefficients(ai)
 b_norm = normalize_coefficients(bj)
 
-#-----------------بازه ی f1 , f2------------------
+# -----------------بازه ی f1 , f2------------------
 f1 = []
 f2 = []
 
@@ -62,9 +62,10 @@ F1_MAX = np.max(f1)
 F2_MIN = np.min(f2)
 F2_MAX = np.max(f2)
 
-#----------------اجرای مرحله سوم روی 4 سناریو----------------
-all_scenarios = get_scenarios_for_team2()
-scenarios = all_scenarios[:4]
+# ----------------اجرای مرحله سوم روی 4 سناریو----------------
+# all_scenarios = get_scenarios_for_team2()
+# scenarios = all_scenarios()
+scenarios = get_scenarios_for_team2()
 
 configs = [
     {"name": "A: Tournament + Arithmetic + mut=0.05",
@@ -84,6 +85,8 @@ for sc in scenarios:
     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
     axes = axes.flatten()
 
+    sc['name'] = sc['name'][::-1]
+
     for idx, cfg in enumerate(configs):
         print(f"{cfg['name']}")
         ga = GA(fitness_obj,
@@ -99,7 +102,8 @@ for sc in scenarios:
         ax = axes[idx]
         ax.plot(best_hist, label='Best Cost', color='blue', linewidth=2)
         ax.plot(avg_hist, label='Avg Cost', color='red', linestyle='--', linewidth=2)
-        ax.set_title(f"{cfg['name']}\nBest Cost = {best_cost:.4f}")
+        title = cfg['name']
+        ax.set_title(f"{title}\nBest Cost = {best_cost:.4f}")
         ax.set_xlabel('Generation')
         ax.set_ylabel('Cost')
         ax.legend()

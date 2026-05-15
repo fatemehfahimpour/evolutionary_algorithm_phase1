@@ -1,6 +1,7 @@
 import numpy as np
 import random
 
+
 class GA:
     def __init__(self, fitness_obj, pop_size=50, generations=100,
                  crossover_rate=0.9, mutation_rate=0.05,
@@ -53,7 +54,7 @@ class GA:
         max_cost = max(costs)
         if max_cost - min_cost < 1e-8:
             return random.choice(population).copy()
-        #بهترین فرد هزیته کمتری دارد پس max_cost - c برایش بیشتر است و احتمال انتخاب بیشتری دارد.
+        # بهترین فرد هزیته کمتری دارد پس max_cost - c برایش بیشتر است و احتمال انتخاب بیشتری دارد.
         fitness_vals = np.array([max_cost - c + 1e-8 for c in costs])
         probs = fitness_vals / np.sum(fitness_vals)
         idx = np.random.choice(len(population), p=probs)
@@ -67,7 +68,7 @@ class GA:
         c2 = [alpha * p2[i] + (1 - alpha) * p1[i] for i in range(self.dim)]
         return c1, c2
 
-    def uniform(self,p1,p2):
+    def uniform(self, p1, p2):
         if random.random() > self.crossover_rate:
             return p1.copy(), p2.copy()
         child1 = []
@@ -85,13 +86,13 @@ class GA:
         mutated = individual.copy()
         for i in range(self.dim):
             if random.random() < self.mutation_rate:
-                if i == 0:# T_in
+                if i == 0:  # T_in
                     low, high = self.bounds['T_in']
-                elif i == 1:# H_in
+                elif i == 1:  # H_in
                     low, high = self.bounds['H_in']
-                elif i == 2:# L
+                elif i == 2:  # L
                     low, high = self.bounds['L']
-                else:# CO2
+                else:  # CO2
                     low, high = self.bounds['CO2']
                 delta = np.random.normal(0, (high - low) * 0.05)
                 mutated[i] += delta
@@ -137,7 +138,7 @@ class GA:
         best_cost = costs[best_idx]
         return best_individual, best_cost, best_cost_history, avg_cost_history
 
-    def run_multiple(self, num_runs=5):#میانگین 5بار اجرا
+    def run_multiple(self, num_runs=5):  # میانگین 5بار اجرا
         best_individuals = []
         best_costs = []
         all_histories = []

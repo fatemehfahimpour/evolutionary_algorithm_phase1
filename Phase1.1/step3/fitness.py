@@ -1,10 +1,11 @@
 import numpy as np
 from step1.Fitness_function import normalize_coefficients
 
+
 class Fitness:
     def __init__(self, best_chromosome, z, bounds, F1_min, F1_max, F2_min, F2_max):
         self.best_chromosome = best_chromosome
-        self.z = z#T_out ,H_out ,Solar,Wind,N,W
+        self.z = z  # T_out ,H_out ,Solar,Wind,N,W
         self.bounds = bounds
         self.F1_MIN = F1_min
         self.F1_MAX = F1_max
@@ -29,7 +30,7 @@ class Fitness:
     def get_k_w(self, weather):
         k_w_map = {"night": 0.8, "sunny": 0.9, "cloudy": 1.0, "humid": 1.08,
                    "rainy": 1.15, "stormy": 1.25, "cold": 1.3}
-        return k_w_map.get(weather, 1.0)# اگر هوا هیچ یک از مقادیر بالا نباشد مقدار 1.0 را برمیگرداند.
+        return k_w_map.get(weather, 1.0)  # اگر هوا هیچ یک از مقادیر بالا نباشد مقدار 1.0 را برمیگرداند.
 
     def calculate_energy(self, u):
         T_in, H_in, L, CO2 = u
@@ -94,17 +95,17 @@ class Fitness:
         p_vent_risk = max(0, self.z['N'] * self.z['Wind'] - 50)
 
         f1 = (self.a_norm[0] * np.log1p(p_e ** 2) +
-                  self.a_norm[1] * p_delta_t +
-                  self.a_norm[2] * p_delta_h +
-                  self.a_norm[3] * p_light_def +
-                  self.a_norm[4] * p_n +
-                  self.a_norm[5] * p_vent_risk)
+              self.a_norm[1] * p_delta_t +
+              self.a_norm[2] * p_delta_h +
+              self.a_norm[3] * p_light_def +
+              self.a_norm[4] * p_n +
+              self.a_norm[5] * p_vent_risk)
 
         f2 = (self.b_norm[0] * ST +
-                  self.b_norm[1] * SH +
-                  self.b_norm[2] * SL +
-                  self.b_norm[3] * SC -
-                  self.b_norm[4] * PN)
+              self.b_norm[1] * SH +
+              self.b_norm[2] * SL +
+              self.b_norm[3] * SC -
+              self.b_norm[4] * PN)
 
         # نرمال‌سازی با بازه‌های ثابت و جریمه برای خروج از بازه
         if f1 <= self.F1_MIN:
