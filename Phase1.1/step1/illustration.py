@@ -62,7 +62,14 @@ def different_combination(df_clean):
         print(f"Best Chromosome = {[round(x, 4) for x in res['best_chrom']]}")
         print("-" * 40)
 
-    return results
+    best_result = max(results, key=lambda x: x["best_fit"])
+    print("\n" + "=" * 60)
+    print(f"Best Result: {best_result['name']} Fitness = {best_result['best_fit']:.6f}")
+    print("=" * 60)
+
+    best_chromosome = best_result["best_chrom"]
+
+    return best_chromosome
 
 
 def sensitivity_analysis(df, chromosome, perturbation=0.05):
@@ -109,14 +116,7 @@ def sensitivity_analysis(df, chromosome, perturbation=0.05):
     return pd.DataFrame(results_list), base_fitness, base_f1, base_f2
 
 
-def coefficients_sensitive_analysis(df_clean , results):
-    best_result = max(results, key=lambda x: x["best_fit"])
-    print("\n" + "=" * 60)
-    print(f"Best Result: {best_result['name']} Fitness = {best_result['best_fit']:.6f}")
-    print("=" * 60)
-
-    best_chromosome = best_result["best_chrom"]
-
+def coefficients_sensitive_analysis(df_clean , best_chromosome):
     perturb = 0.05
     df_sensitivity, base_fit, base_f1, base_f2 = sensitivity_analysis(df_clean, best_chromosome, perturbation=perturb)
 
@@ -149,8 +149,6 @@ def coefficients_sensitive_analysis(df_clean , results):
     ax.grid(axis='y', alpha=0.3)
     plt.tight_layout()
     plt.show()
-
-    return best_chromosome
 
 
 def critical_points_analysis(df_clean , best_chromosome):

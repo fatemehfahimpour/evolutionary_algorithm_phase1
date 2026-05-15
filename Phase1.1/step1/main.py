@@ -1,18 +1,15 @@
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import illustration
 from Preprocessing import get_preprocessed_data
-from genetic_algorithm import run_ga
-from Fitness_function import fitness, calculate_f1_score, calculate_f2_score, normalize_coefficients
 
 DATA_PATH = 'data/1_26336110128.csv'
 df_clean = get_preprocessed_data(DATA_PATH)
 delta = 1e-8
 
-results = illustration.different_combination(df_clean)
+best_chromosome = illustration.different_combination(df_clean)
 
-best_chromosome = illustration.coefficients_sensitive_analysis(df_clean, results)
+illustration.coefficients_sensitive_analysis(df_clean, best_chromosome)
 
 F1_min, F1_max, F2_min, F2_max, a_norm, b_norm = illustration.critical_points_analysis(df_clean, best_chromosome)
 
