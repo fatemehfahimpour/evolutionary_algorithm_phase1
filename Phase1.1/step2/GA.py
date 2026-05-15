@@ -1,0 +1,134 @@
+import random
+import numpy as np
+from pathlib import Path
+from step1.Preprocessing import get_preprocessed_data
+from step1.genetic_algorithm import (
+    tournament_selection,
+    uniform_crossover,
+    arithmetic_crossover,
+    roulette_wheel_selection
+)
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+DATA_PATH = BASE_DIR / 'step1' / 'data' / '1_26336110128.csv'
+df_clean = get_preprocessed_data(DATA_PATH)
+# chromosome = [T_in, T_out, H_in, L, N, CO2, wind, solar, H_out] + weather_vector
+# N
+WEATHER_LIST = ["night", "sunny", "cloudy", "humid", "rainy", "stormy", "cold"]
+
+
+def initialize_population():
+    T_in = random.uniform(18, 30)
+    T_out = random.uniform(0, 40)
+    H_in = random.uniform(20, 80)
+    L = random.uniform(100, 900)
+    N = random.randint(1, 30)
+    CO2 = random.uniform(400, 1500)
+    wind = random.uniform(df_clean['Wind'].min(), df_clean['Wind'].max())
+    solar = random.uniform(df_clean['Solar'].min(), df_clean['Solar'].max())
+    H_out = random.uniform(df_clean['H_out'].min(), df_clean['H_out'].max())
+
+    weather_vector = [0] * len(WEATHER_LIST)
+    selected_weather = random.randint(0, len(WEATHER_LIST) - 1)
+    weather_vector[selected_weather] = 1
+
+    chromosome = [T_in, T_out, H_in, L, N, CO2, wind, solar, H_out] + weather_vector
+    return chromosome
+
+
+def evaluate_population(pop_size):
+    return [initialize_population() for _ in range(pop_size)]
+
+def gaussian_mutation(individual, mutation_rate=0.05):
+    mutated = individual.copy()
+    for i in range(9):
+        if random.random() < mutation_rate:
+            if i == 0: low, high = 18, 30      # T_in
+            elif i == 1: low, high = 0, 40    # T_out
+            elif i == 2: low, high = 20, 80    # H_in
+            elif i == 3: low, high = 100, 900   # L
+            elif i == 4: low, high = 1, 30     # N
+            elif i == 5: low, high = 400, 1500 # CO2
+            elif i == 6: low, high =df_clean['Wind'].min() ,  df_clean['Wind'].max()    # Wind
+            elif i == 7: low, high = df_clean['Solar'].min(), df_clean['Solar'].max()   # Solar
+            else: low, high = df_clean['H_out'].min(), df_clean['H_out'].max()           # H_out
+            delta = np.random.normal(0, (high - low) * 0.05)
+            mutated[i] += delta
+            if i == 4:  # N صحیح
+                mutated[i] = int(round(np.clip(mutated[i], low, high)))
+            else:
+                mutated[i] = np.clip(mutated[i], low, high)
+
+    if random.random() < mutation_rate:
+        new_idx = random.randint(0, len(WEATHER_LIST)-1)
+        mutated[9:] = [0]*len(WEATHER_LIST)
+        mutated[9+new_idx] = 1
+    return mutated
+
+def run_ga(pop_size=80, generations=150,
+           selection_method='tournament', crossover_method='arithmetic',
+           crossover_rate=0.9, mutation_rate=0.05, tournament_size=3,
+           lambda_real=0.0, real_penalty=None, fitness_func=None,
+           plot_convergence=False):
+    if fitness_func is None:
+        raise ValueError("error")
+
+    population = evaluate_population(pop_size)
+    fitness_vals = [fitness_func(ind, lambda_real, real_penalty) for ind in population]
+    best_fitness_history = []
+    avg_fitness_history = []
+
+    for gen in range(generations):
+        best_fitness_history.append(max(fitness_vals))
+        avg_fitness_history.append(np.mean(fitness_vals))
+        new_pop = []
+        new_fit = []
+
+        while len(new_pop) < pop_size:
+            if selection_method == 'tournament':
+                p1 = tournament_selection(population, fitness_vals, tournament_size)
+                p2 = tournament_selection(population, fitness_vals, tournament_size)
+            else:
+                p1 = roulette_wheel_selection(population, fitness_vals)
+                p2 = roulette_wheel_selection(population, fitness_vals)
+
+            if random.random() < crossover_rate:
+                if crossover_method == 'arithmetic':
+                    c1, c2 = arithmetic_crossover(p1, p2)
+                else:
+                    c1, c2 = uniform_crossover(p1, p2)
+            else:
+                c1, c2 = p1.copy(), p2.copy()
+
+            c1 = gaussian_mutation(c1, mutation_rate)
+            c2 = gaussian_mutation(c2, mutation_rate)
+
+            fit1 = fitness_func(c1, lambda_real, real_penalty)
+            fit2 = fitness_func(c2, lambda_real, real_penalty)
+
+            new_pop.append(c1)
+            new_fit.append(fit1)
+            if len(new_pop) < pop_size:
+                new_pop.append(c2)
+                new_fit.append(fit2)
+
+        population = new_pop
+        fitness_vals = new_fit
+
+    best_idx = np.argmax(fitness_vals)
+    best_individual = population[best_idx]
+    best_fitness = fitness_vals[best_idx]
+
+    if plot_convergence:
+        import matplotlib.pyplot as plt
+        plt.figure(figsize=(10, 5))
+        plt.plot(best_fitness_history, label='Best Fitness')
+        plt.plot(avg_fitness_history, label='Average Fitness')
+        plt.xlabel('Generation')
+        plt.ylabel('Fitness')
+        plt.title('Convergence - Stage2 GA')
+        plt.legend()
+        plt.grid()
+        plt.show()
+
+    return best_individual, best_fitness, best_fitness_history, avg_fitness_history
