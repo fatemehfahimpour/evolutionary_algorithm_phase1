@@ -101,7 +101,7 @@ def calculate_quality_scores(df):
 def get_preprocessed_data(file_path):
     df = load_and_clean_data(file_path)
     df = one_hot_encode_weather(df)
-    df = calculate_energy_column(df)
+    # df = calculate_energy_column(df)
     df = calculate_quality_scores(df)
     return df
 

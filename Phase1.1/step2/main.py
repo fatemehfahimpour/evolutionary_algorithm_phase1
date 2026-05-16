@@ -3,7 +3,7 @@ from pathlib import Path
 from step1.Preprocessing import get_preprocessed_data
 from step1.genetic_algorithm import run_ga as run_ga_stage1
 from step1.Fitness_function import normalize_coefficients
-from GA import run_ga
+from GA import run_ga_step2
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_PATH = BASE_DIR / 'step1' / 'data' / '1_26336110128.csv'
@@ -14,7 +14,6 @@ ai = best_chrom[:6]
 bj = best_chrom[6:]
 a_norm = normalize_coefficients(ai)
 b_norm = normalize_coefficients(bj)
-
 
 configs = [
     {"name": "A: Tournament + Arithmetic + mut=0.05",
@@ -31,16 +30,16 @@ results = []
 
 for cfg in configs:
     print(f"\n{cfg['name']}")
-    best_ind, best_fit, best_hist, avg_hist = run_ga(a_norm , b_norm,
-        pop_size=80,
-        generations=150,
-        selection_method=cfg['selection'],
-        crossover_method=cfg['crossover'],
-        crossover_rate=0.9,
-        mutation_rate=cfg['mut'],
-        tournament_size=3,
-        plot_convergence=False
-    )
+    best_ind, best_fit, best_hist, avg_hist = run_ga_step2(a_norm, b_norm,
+                                                           pop_size=80,
+                                                           generations=150,
+                                                           selection_method=cfg['selection'],
+                                                           crossover_method=cfg['crossover'],
+                                                           crossover_rate=0.9,
+                                                           mutation_rate=cfg['mut'],
+                                                           tournament_size=3,
+                                                           plot_convergence=False
+                                                           )
     results.append({
         "name": cfg["name"],
         "best_ind": best_ind,
@@ -67,10 +66,10 @@ for i, res in enumerate(results):
 plt.tight_layout()
 plt.show()
 
-print("\n" + "-"*60)
+print("\n" + "-" * 60)
 print("خلاصه نتایج چهار ترکیب:")
 for res in results:
     print(f"{res['name']}:")
     print(f"    Fitness = {res['best_fit']:.6f}")
-    print(f"   بهترین کروموزوم: {[round(x,4) for x in res['best_ind'][:9]]}")
-    print("-"*40)
+    print(f"   بهترین کروموزوم: {[round(x, 4) for x in res['best_ind'][:9]]}")
+    print("-" * 40)

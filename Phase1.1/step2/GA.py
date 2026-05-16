@@ -19,12 +19,12 @@ WEATHER_LIST = ["night", "sunny", "cloudy", "humid", "rainy", "stormy", "cold"]
 
 
 def initialize_population():
-    T_in = random.uniform(18, 30)
-    T_out = random.uniform(0, 40)
-    H_in = random.uniform(20, 80)
-    L = random.uniform(100, 900)
+    T_in = random.uniform(10, 35)
+    T_out = random.uniform(-5, 45)
+    H_in = random.uniform(10, 90)
+    L = random.uniform(0, 1000)
     N = random.randint(1, 30)
-    CO2 = random.uniform(400, 1500)
+    CO2 = random.uniform(300, 1700)
     wind = random.uniform(df_clean['Wind'].min(), df_clean['Wind'].max())
     solar = random.uniform(df_clean['Solar'].min(), df_clean['Solar'].max())
     H_out = random.uniform(df_clean['H_out'].min(), df_clean['H_out'].max())
@@ -46,17 +46,17 @@ def gaussian_mutation(individual, mutation_rate=0.05):
     for i in range(9):
         if random.random() < mutation_rate:
             if i == 0:
-                low, high = 18, 30  # T_in
+                low, high = 10, 35  # T_in
             elif i == 1:
-                low, high = 0, 40  # T_out
+                low, high = -5, 45  # T_out
             elif i == 2:
-                low, high = 20, 80  # H_in
+                low, high = 10, 90  # H_in
             elif i == 3:
-                low, high = 100, 900  # L
+                low, high = 0, 1000  # L
             elif i == 4:
                 low, high = 1, 30  # N
             elif i == 5:
-                low, high = 400, 1500  # CO2
+                low, high = 300, 1700  # CO2
             elif i == 6:
                 low, high = df_clean['Wind'].min(), df_clean['Wind'].max()  # Wind
             elif i == 7:
@@ -77,7 +77,6 @@ def gaussian_mutation(individual, mutation_rate=0.05):
     return mutated
 
 
-
 def compute_objective_ranges(population, a, b):
     f1_vals = [f1_score(ch, a) for ch in population]
     f2_vals = [f2_score(ch, b) for ch in population]
@@ -90,15 +89,12 @@ def compute_objective_ranges(population, a, b):
     return F1_min, F1_max, F2_min, F2_max
 
 
-
-def run_ga(a , b ,pop_size=80, generations=150,
-           selection_method='tournament', crossover_method='arithmetic',
-           crossover_rate=0.9, mutation_rate=0.05, tournament_size=3,
-           lambda_real=0.0, real_penalty=None,
-           plot_convergence=False):
-
+def run_ga_step2(a, b, pop_size=80, generations=150,
+                 selection_method='tournament', crossover_method='arithmetic',
+                 crossover_rate=0.9, mutation_rate=0.05, tournament_size=3,
+                 plot_convergence=False):
     population = evaluate_population(pop_size)
-    F1_min, F1_max, F2_min, F2_max = compute_objective_ranges(population , a , b)
+    F1_min, F1_max, F2_min, F2_max = compute_objective_ranges(population, a, b)
     fitness_vals = [
         fitness_function(ind, a, b, F1_min, F1_max, F2_min, F2_max)
         for ind in population
@@ -132,7 +128,7 @@ def run_ga(a , b ,pop_size=80, generations=150,
             c1 = gaussian_mutation(c1, mutation_rate)
             c2 = gaussian_mutation(c2, mutation_rate)
 
-            fit1 = fitness_function(c1 , a, b, F1_min, F1_max, F2_min, F2_max)
+            fit1 = fitness_function(c1, a, b, F1_min, F1_max, F2_min, F2_max)
             fit2 = fitness_function(c2, a, b, F1_min, F1_max, F2_min, F2_max)
 
             new_pop.append(c1)

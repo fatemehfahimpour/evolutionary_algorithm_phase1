@@ -14,7 +14,6 @@ def f1_score(chromosome, a, tau=50):
     P_hum = max(0, H_in - 60) ** 2 + max(0, 30 - H_in) ** 2
 
     # weather factor
-    weather_vec = chromosome[9:]
     WEATHER_LIST = ["night", "sunny", "cloudy", "humid", "rainy", "stormy", "cold"]
 
     weather_vec = chromosome[9:]
