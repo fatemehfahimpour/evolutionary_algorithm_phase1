@@ -91,8 +91,10 @@ def compute_objective_ranges(population, a, b):
 
 def run_ga_step2(a, b, pop_size=80, generations=150,
                  selection_method='tournament', crossover_method='arithmetic',
-                 crossover_rate=0.9, mutation_rate=0.05, tournament_size=3,
-                 plot_convergence=False):
+                 crossover_rate=0.9, mutation_rate=0.05, tournament_size=3):
+    sample_population = evaluate_population(1000)
+    F1_min, F1_max, F2_min, F2_max = compute_objective_ranges(sample_population, a, b)
+
     population = evaluate_population(pop_size)
     F1_min, F1_max, F2_min, F2_max = compute_objective_ranges(population, a, b)
     fitness_vals = [
@@ -102,10 +104,21 @@ def run_ga_step2(a, b, pop_size=80, generations=150,
 
     best_fitness_history = []
     avg_fitness_history = []
+    f1_history = []
+    f2_history = []
 
     for gen in range(generations):
+        #history
         best_fitness_history.append(max(fitness_vals))
         avg_fitness_history.append(np.mean(fitness_vals))
+        best_idx = np.argmax(fitness_vals)
+        best_ind = population[best_idx]
+        f1 = f1_score(best_ind, a)
+        f2 = f2_score(best_ind, b)
+        delta = 1e-6
+        f1_history.append((f1 - F1_min) / (F1_max - F1_min + delta))
+        f2_history.append((f2 - F2_min) / (F2_max - F2_min + delta))
+
         new_pop = []
         new_fit = []
 
@@ -144,16 +157,4 @@ def run_ga_step2(a, b, pop_size=80, generations=150,
     best_individual = population[best_idx]
     best_fitness = fitness_vals[best_idx]
 
-    if plot_convergence:
-        import matplotlib.pyplot as plt
-        plt.figure(figsize=(10, 5))
-        plt.plot(best_fitness_history, label='Best Fitness')
-        plt.plot(avg_fitness_history, label='Average Fitness')
-        plt.xlabel('Generation')
-        plt.ylabel('Fitness')
-        plt.title('Convergence - Stage2 GA')
-        plt.legend()
-        plt.grid()
-        plt.show()
-
-    return best_individual, best_fitness, best_fitness_history, avg_fitness_history
+    return best_individual, best_fitness, best_fitness_history, avg_fitness_history, f1_history, f2_history

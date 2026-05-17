@@ -19,7 +19,7 @@ def different_combination(df_clean):
     results = []
 
     for cfg in configs:
-        best_chrom, best_fit, best_hist, avg_hist = run_ga(
+        best_chrom, best_fit, best_hist, avg_hist, f1_hist, f2_hist = run_ga(
             df_clean,
             selection_method=cfg["selection"],
             crossover_method=cfg["crossover"],
@@ -35,7 +35,9 @@ def different_combination(df_clean):
             "best_chrom": best_chrom,
             "best_fit": best_fit,
             "best_hist": best_hist,
-            "avg_hist": avg_hist
+            "avg_hist": avg_hist,
+            "f1_hist": f1_hist,
+            "f2_hist": f2_hist
         })
 
     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
@@ -53,6 +55,25 @@ def different_combination(df_clean):
         ax.grid(True, alpha=0.3)
         ax.annotate(f'Best={res["best_fit"]:.4f}', xy=(0.7, 0.1), xycoords='axes fraction',
                     fontsize=10, bbox=dict(facecolor='white', alpha=0.8))
+    plt.tight_layout()
+    plt.show()
+
+    # ------------رسم نمودارهای f1_score و f2_score---------------------
+    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+    axes = axes.flatten()
+
+    for i, res in enumerate(results):
+        ax = axes[i]
+        gens = range(1, len(res["f1_hist"]) + 1)
+        ax.plot(gens, res["f1_hist"], label='f1_score (Best Individual)', color='green', linewidth=2)
+        ax.plot(gens, res["f2_hist"], label='f2_score (Best Individual)', color='orange', linewidth=2)
+        ax.set_title(res["name"])
+        ax.set_xlabel('Generation')
+        ax.set_ylabel('Normalized Score')
+        ax.legend()
+        ax.grid(True, alpha=0.3)
+        ax.set_ylim(0, 1)
+    plt.suptitle('Normalized f1_score and f2_score of the Best Individual per Generation', fontsize=14)
     plt.tight_layout()
     plt.show()
 

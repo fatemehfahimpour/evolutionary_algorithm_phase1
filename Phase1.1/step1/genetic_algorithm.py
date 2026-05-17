@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from step1.Fitness_function import fitness
+from step1.Fitness_function import fitness, normalize_coefficients, calculate_f1_score, calculate_f2_score
 
 
 def roulette_wheel_selection(population, fitness_values):
@@ -109,8 +109,20 @@ def run_ga(df_clean, pop_size=50, generations=100, selection_method="tournament"
     population, fitness_values = initialize_population(df_clean, pop_size)
     best_fitness_history = []
     avg_fitness_history = []
+    best_f1_history = []
+    best_f2_history = []
 
     for gen in range(generations):
+        best_idx = np.argmax(fitness_values)
+        best_individual = population[best_idx]
+        ai = best_individual[:6]
+        bj = best_individual[6:]
+        a_norm = normalize_coefficients(ai)
+        b_norm = normalize_coefficients(bj)
+        f1_arr = calculate_f1_score(df_clean, a_norm)
+        f2_arr = calculate_f2_score(df_clean, b_norm)
+        best_f1_history.append(np.mean(f1_arr))
+        best_f2_history.append(np.mean(f2_arr))
         best_fitness_history.append(max(fitness_values))
         avg_fitness_history.append(np.mean(fitness_values))
         new_population = []
@@ -176,4 +188,4 @@ def run_ga(df_clean, pop_size=50, generations=100, selection_method="tournament"
         plt.grid(True, alpha=0.3)
         plt.show()
 
-    return population[best_idx], fitness_values[best_idx], best_fitness_history, avg_fitness_history
+    return population[best_idx], fitness_values[best_idx], best_fitness_history, avg_fitness_history, best_f1_history, best_f2_history

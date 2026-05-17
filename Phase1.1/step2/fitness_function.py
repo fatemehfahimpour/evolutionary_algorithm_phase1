@@ -136,6 +136,9 @@ def fitness_function(chromosome, a, b, F1_min, F1_max, F2_min, F2_max, w1=0.4, w
     f1_norm = (f1 - F1_min) / (F1_max - F1_min + delta)
     f2_norm = (f2 - F2_min) / (F2_max - F2_min + delta)
 
+    f1_norm = np.clip(f1_norm, 0, 1)
+    f2_norm = np.clip(f2_norm, 0, 1)
+
     f1_norm = 1 - f1_norm
 
     fitness = w1 * f1_norm + w2 * f2_norm

@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_PATH = BASE_DIR / 'step1' / 'data' / '1_26336110128.csv'
 df_clean = get_preprocessed_data(str(DATA_PATH))
 
-best_chrom, best_fit, _, _ = run_ga_stage1(df_clean, plot_convergence=False)
+best_chrom, best_fit, _, _ ,_,_= run_ga_stage1(df_clean, plot_convergence=False)
 ai = best_chrom[:6]
 bj = best_chrom[6:]
 a_norm = normalize_coefficients(ai)
@@ -30,27 +30,28 @@ results = []
 
 for cfg in configs:
     print(f"\n{cfg['name']}")
-    best_ind, best_fit, best_hist, avg_hist = run_ga_step2(a_norm, b_norm,
-                                                           pop_size=80,
-                                                           generations=150,
-                                                           selection_method=cfg['selection'],
-                                                           crossover_method=cfg['crossover'],
-                                                           crossover_rate=0.9,
-                                                           mutation_rate=cfg['mut'],
-                                                           tournament_size=3,
-                                                           plot_convergence=False
-                                                           )
+    best_ind, best_fit, best_hist, avg_hist, f1_history, f2_history = run_ga_step2(a_norm, b_norm, pop_size=80,
+                                                                                   generations=150,
+                                                                                   selection_method=cfg['selection'],
+                                                                                   crossover_method=cfg['crossover'],
+                                                                                   crossover_rate=0.9,
+                                                                                   mutation_rate=cfg['mut'],
+                                                                                   tournament_size=3, )
+
     results.append({
         "name": cfg["name"],
         "best_ind": best_ind,
         "best_fit": best_fit,
         "best_hist": best_hist,
-        "avg_hist": avg_hist
+        "avg_hist": avg_hist,
+        "f1_hist": f1_history,
+        "f2_hist": f2_history
     })
 
 fig, axes = plt.subplots(2, 2, figsize=(14, 10))
 axes = axes.flatten()
 
+# show fitness
 for i, res in enumerate(results):
     ax = axes[i]
     generations = range(1, len(res["best_hist"]) + 1)
@@ -63,6 +64,27 @@ for i, res in enumerate(results):
     ax.grid(True, alpha=0.3)
     ax.annotate(f'Best={res["best_fit"]:.4f}', xy=(0.7, 0.1), xycoords='axes fraction',
                 fontsize=10, bbox=dict(facecolor='white', alpha=0.8))
+plt.tight_layout()
+plt.show()
+
+# show f1 and f2
+fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+axes = axes.flatten()
+
+for i, res in enumerate(results):
+    ax = axes[i]
+    generations = range(1, len(res["f1_hist"]) + 1)
+
+    ax.plot(generations, res["f1_hist"], label='f1 (Energy Cost)', color='purple', linewidth=2)
+    ax.plot(generations, res["f2_hist"], label='f2 (Plant Growth)', color='green', linestyle='--', linewidth=2)
+
+    ax.set_title(res["name"])
+    ax.set_xlabel('Generation')
+    ax.set_ylabel('Objective Value')
+
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+
 plt.tight_layout()
 plt.show()
 

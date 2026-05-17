@@ -12,7 +12,7 @@ from scenarios import get_scenarios_for_team2
 DATA_PATH_STEP1 = Path(__file__).resolve().parent.parent / 'step1' / 'data' / '1_26336110128.csv'
 df_clean = get_preprocessed_data(str(DATA_PATH_STEP1))
 
-best_chrom, best_fit, best_hist, avg_hist = run_ga(
+best_chrom, best_fit, best_hist, avg_hist, best_f1_history, best_f2_history = run_ga(
     df_clean,
     pop_size=80,
     generations=150,
