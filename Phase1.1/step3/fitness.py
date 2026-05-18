@@ -133,4 +133,33 @@ class Fitness:
         total_penalty = 0.1 * (penalty1 + penalty2)
         fitness = 0.4 * f1_score + 0.6 * f2_score + self.rx - total_penalty
         cost = -fitness
-        return cost
+
+        # برگرداندن cost به همراه f1_norm و f2_norm
+        return cost, f1_norm, f2_norm
+
+    def calculate_raw_f1_f2(self, u):
+        """محاسبه مقادیر خام f1 و f2 بدون نرمال‌سازی - برای محاسبه بازه مرحله 3"""
+        E = self.calculate_energy(u)
+        ST, SH, SL, SC, PN = self.calculate_quality_scores(u)
+
+        p_e = max(0, E - 100)
+        p_delta_t = abs(u[0] - self.z['T_out'])
+        p_delta_h = abs(u[1] - self.z['H_out'])
+        p_light_def = max(0, 500 - (u[2] + self.z['Solar']))
+        p_n = np.sqrt(self.z['N'])
+        p_vent_risk = max(0, self.z['N'] * self.z['Wind'] - 50)
+
+        f1_raw = (self.a_norm[0] * np.log1p(p_e ** 2) +
+                  self.a_norm[1] * p_delta_t +
+                  self.a_norm[2] * p_delta_h +
+                  self.a_norm[3] * p_light_def +
+                  self.a_norm[4] * p_n +
+                  self.a_norm[5] * p_vent_risk)
+
+        f2_raw = (self.b_norm[0] * ST +
+                  self.b_norm[1] * SH +
+                  self.b_norm[2] * SL +
+                  self.b_norm[3] * SC -
+                  self.b_norm[4] * PN)
+
+        return f1_raw, f2_raw

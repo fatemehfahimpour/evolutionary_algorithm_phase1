@@ -89,14 +89,11 @@ def compute_objective_ranges(population, a, b):
     return F1_min, F1_max, F2_min, F2_max
 
 
-def run_ga_step2(a, b, pop_size=80, generations=150,
+def run_ga_step2(a, b , F1_min , F1_max, F2_min, F2_max, pop_size=80, generations=150,
                  selection_method='tournament', crossover_method='arithmetic',
                  crossover_rate=0.9, mutation_rate=0.05, tournament_size=3):
-    sample_population = evaluate_population(1000)
-    F1_min, F1_max, F2_min, F2_max = compute_objective_ranges(sample_population, a, b)
 
     population = evaluate_population(pop_size)
-    F1_min, F1_max, F2_min, F2_max = compute_objective_ranges(population, a, b)
     fitness_vals = [
         fitness_function(ind, a, b, F1_min, F1_max, F2_min, F2_max)
         for ind in population

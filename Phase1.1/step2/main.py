@@ -3,13 +3,14 @@ from pathlib import Path
 from step1.Preprocessing import get_preprocessed_data
 from step1.genetic_algorithm import run_ga as run_ga_stage1
 from step1.Fitness_function import normalize_coefficients
-from GA import run_ga_step2
+from GA import run_ga_step2, evaluate_population
+from step2.GA import compute_objective_ranges
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_PATH = BASE_DIR / 'step1' / 'data' / '1_26336110128.csv'
 df_clean = get_preprocessed_data(str(DATA_PATH))
 
-best_chrom, best_fit, _, _ ,_,_= run_ga_stage1(df_clean, plot_convergence=False)
+best_chrom, best_fit, _, _, _, _ = run_ga_stage1(df_clean, plot_convergence=False)
 ai = best_chrom[:6]
 bj = best_chrom[6:]
 a_norm = normalize_coefficients(ai)
@@ -28,15 +29,19 @@ configs = [
 
 results = []
 
+sample_population = evaluate_population(50000)
+F1_min, F1_max, F2_min, F2_max = compute_objective_ranges(sample_population, a_norm, b_norm)
+
 for cfg in configs:
     print(f"\n{cfg['name']}")
-    best_ind, best_fit, best_hist, avg_hist, f1_history, f2_history = run_ga_step2(a_norm, b_norm, pop_size=80,
+    best_ind, best_fit, best_hist, avg_hist, f1_history, f2_history = run_ga_step2(a_norm, b_norm, F1_min, F1_max,
+                                                                                   F2_min, F2_max, pop_size=80,
                                                                                    generations=150,
                                                                                    selection_method=cfg['selection'],
                                                                                    crossover_method=cfg['crossover'],
                                                                                    crossover_rate=0.9,
                                                                                    mutation_rate=cfg['mut'],
-                                                                                   tournament_size=3, )
+                                                                                   tournament_size=3)
 
     results.append({
         "name": cfg["name"],

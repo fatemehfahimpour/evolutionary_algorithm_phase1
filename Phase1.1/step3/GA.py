@@ -31,8 +31,11 @@ class GA:
         return pop
 
     def evaluate_population(self, population):
-        costs = [self.fitness_obj.calculate_cost(ind) for ind in population]
-        return costs
+        results = [self.fitness_obj.calculate_cost(ind) for ind in population]
+        costs = [r[0] for r in results]
+        f1_norms = [r[1] for r in results]
+        f2_norms = [r[2] for r in results]
+        return costs, f1_norms, f2_norms
 
     def tournament(self, population, costs):
         selected_indices = np.random.choice(
@@ -101,14 +104,22 @@ class GA:
 
     def run(self):
         population = self.initialize_population()
-        costs = self.evaluate_population(population)
+        costs, f1_norms, f2_norms = self.evaluate_population(population)
+
         best_cost_history = []
         avg_cost_history = []
+        best_f1_norm_history = []
+        best_f2_norm_history = []
 
         for gen in range(self.generations):
             best_idx = np.argmin(costs)
             best_cost_history.append(costs[best_idx])
             avg_cost_history.append(np.mean(costs))
+
+            # ذخیره f1_norm و f2_norm بهترین فرد این نسل
+            best_f1_norm_history.append(f1_norms[best_idx])
+            best_f2_norm_history.append(f2_norms[best_idx])
+
             new_population = []
 
             while len(new_population) < self.pop_size:
@@ -131,12 +142,13 @@ class GA:
                     new_population.append(child2)
 
             population = new_population
-            costs = self.evaluate_population(population)
+            costs, f1_norms, f2_norms = self.evaluate_population(population)
 
         best_idx = np.argmin(costs)
         best_individual = population[best_idx]
         best_cost = costs[best_idx]
-        return best_individual, best_cost, best_cost_history, avg_cost_history
+
+        return best_individual, best_cost, best_cost_history, avg_cost_history, best_f1_norm_history, best_f2_norm_history
 
     def run_multiple(self, num_runs=5):  # میانگین 5بار اجرا
         best_individuals = []
