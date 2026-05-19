@@ -4,7 +4,7 @@ import numpy as np
 from Preprocessing import get_k_w
 
 
-def f1_score(chromosome, a, tau=50):
+def calculate_f1(chromosome, a, tau=50):
     T_in, T_out, H_in, L, N, CO2, wind, solar, H_out = chromosome[:9]
 
     # ---------- energy model ----------
@@ -60,7 +60,7 @@ def f1_score(chromosome, a, tau=50):
     return f1
 
 
-def f2_score(chromosome, b, n_max=25):
+def calculate_f2(chromosome, b, n_max=25):
     T_in, T_out, H_in, L, N, CO2, wind, solar, H_out = chromosome[:9]
     # -------- temperature score --------
     if 20 <= T_in <= 24:
@@ -118,8 +118,8 @@ def f2_score(chromosome, b, n_max=25):
 
 
 def compute_objective_ranges(population, a, b):
-    f1_vals = [f1_score(ch, a) for ch in population]
-    f2_vals = [f2_score(ch, b) for ch in population]
+    f1_vals = [calculate_f1(ch, a) for ch in population]
+    f2_vals = [calculate_f2(ch, b) for ch in population]
 
     F1_min = min(f1_vals)
     F1_max = max(f1_vals)
@@ -130,8 +130,8 @@ def compute_objective_ranges(population, a, b):
 
 
 def fitness_function(chromosome, a, b, F1_min, F1_max, F2_min, F2_max, w1=0.4, w2=0.6, delta=1e-6):
-    f1 = f1_score(chromosome, a)
-    f2 = f2_score(chromosome, b)
+    f1 = calculate_f1(chromosome, a)
+    f2 = calculate_f2(chromosome, b)
 
     f1_norm = (f1 - F1_min) / (F1_max - F1_min + delta)
     f2_norm = (f2 - F2_min) / (F2_max - F2_min + delta)

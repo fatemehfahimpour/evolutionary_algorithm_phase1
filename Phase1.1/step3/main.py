@@ -32,7 +32,7 @@ bj = best_chrom[6:]
 a_norm = normalize_coefficients(ai)
 b_norm = normalize_coefficients(bj)
 
-# -----------------بازه ی f1 , f2 از دیتاست (فقط برای مرحله 1)-----------------
+# -----------------بازه ی f1 , f2 از دیتاست -----------------
 # این بازه‌ها برای مرحله 3 استفاده نمی‌شوند - فقط برای مقایسه نگه داشته شده‌اند
 f1_dataset = []
 f2_dataset = []
@@ -151,7 +151,7 @@ def calculate_raw_f1_f2_for_population(fitness_obj, population):
     return f1_vals, f2_vals
 
 
-def compute_stage3_ranges(fitness_obj, pop_size=500):
+def compute_stage3_ranges(fitness_obj, pop_size=50000):
     """محاسبه بازه f1 و f2 برای مرحله 3 با استفاده از جمعیت تصادفی"""
     temp_population = []
     for _ in range(pop_size):
@@ -169,6 +169,14 @@ def compute_stage3_ranges(fitness_obj, pop_size=500):
     F1_max = np.max(f1_vals)
     F2_min = np.min(f2_vals)
     F2_max = np.max(f2_vals)
+
+    # اضافه کردن حاشیه 5 درصدی مثل مرحله 2 (اختیاری اما باعث پایداری می‌شود)
+    margin_f1 = (F1_max - F1_min) * 0.05
+    margin_f2 = (F2_max - F2_min) * 0.05
+    F1_min = F1_min - margin_f1
+    F1_max = F1_max + margin_f1
+    F2_min = F2_min - margin_f2
+    F2_max = F2_max + margin_f2
 
     return F1_min, F1_max, F2_min, F2_max
 
@@ -198,7 +206,7 @@ for sc in scenarios:
     temp_fitness_obj = Fitness(best_chrom, sc['z'], sc['bounds'], 0, 1, 0, 1)
 
     # محاسبه بازه واقعی f1 و f2 برای این سناریو
-    F1_min, F1_max, F2_min, F2_max = compute_stage3_ranges(temp_fitness_obj, pop_size=500)
+    F1_min, F1_max, F2_min, F2_max = compute_stage3_ranges(temp_fitness_obj, pop_size=50000)
 
     print(f"بازه محاسبه شده برای این سناریو:")
     print(f"  F1: [{F1_min:.6f}, {F1_max:.6f}]")
@@ -207,11 +215,11 @@ for sc in scenarios:
     # ایجاد شیء Fitness اصلی با بازه‌های صحیح
     fitness_obj = Fitness(best_chrom, sc['z'], sc['bounds'], F1_min, F1_max, F2_min, F2_max)
 
-    # ========== پنجره اول: نمودارهای هزینه (Best Cost و Avg Cost) ==========
+    # ==========  (Best Cost و Avg Cost) ==========
     fig_cost, axes_cost = plt.subplots(2, 2, figsize=(14, 10))
     axes_cost = axes_cost.flatten()
 
-    # ========== پنجره دوم: نمودارهای f1_norm و f2_norm ==========
+    # ==========  f1_norm و f2_norm ==========
     fig_f, axes_f = plt.subplots(2, 2, figsize=(14, 10))
     axes_f = axes_f.flatten()
 
@@ -230,7 +238,7 @@ for sc in scenarios:
         # دریافت تاریخچه هزینه و f1_norm و f2_norm
         best_ind, best_cost, best_hist, avg_hist, f1_norm_hist, f2_norm_hist = ga.run()
 
-        # ----- رسم در پنجره اول (نمودارهای هزینه) -----
+
         ax_cost = axes_cost[idx]
         ax_cost.plot(best_hist, label='Best Cost', color='blue', linewidth=2)
         ax_cost.plot(avg_hist, label='Avg Cost', color='red', linestyle='--', linewidth=2)
@@ -240,7 +248,7 @@ for sc in scenarios:
         ax_cost.legend(loc='upper right', fontsize=8)
         ax_cost.grid(True, alpha=0.3)
 
-        # ----- رسم در پنجره دوم (نمودارهای f1_norm و f2_norm) -----
+
         ax_f = axes_f[idx]
         ax_f.plot(f1_norm_hist, label='f1_norm (Energy Cost) - lower is better', color='green', linewidth=2)
         ax_f.plot(f2_norm_hist, label='f2_norm (Growth Quality) - higher is better', color='orange', linewidth=2)
@@ -253,22 +261,18 @@ for sc in scenarios:
         ax_f.grid(True, alpha=0.3)
         ax_f.set_ylim(-0.1, 1.1)  # محدوده 0 تا 1 برای نمایش بهتر
 
-        # چاپ نتایج در کنسول
         print(f"    بهترین هزینه: {best_cost:.6f}")
         print(f"    f1_norm نهایی: {f1_norm_hist[-1]:.6f} (هرچه کمتر بهتر)")
         print(f"    f2_norm نهایی: {f2_norm_hist[-1]:.6f} (هرچه بیشتر بهتر)")
         print(f"    بهترین ورودی: T_in={best_ind[0]:.2f}, H_in={best_ind[1]:.2f}, "
               f"L={best_ind[2]:.2f}, CO2={best_ind[3]:.2f}")
 
-    # تنظیم عنوان کلی برای پنجره اول
     fig_cost.suptitle(f"Scenario: {sc['name']} - Cost Convergence", fontsize=14)
     fig_cost.tight_layout()
 
-    # تنظیم عنوان کلی برای پنجره دوم
     fig_f.suptitle(f"Scenario: {sc['name']} - f1_norm & f2_norm Convergence", fontsize=14)
     fig_f.tight_layout()
 
-    # نمایش هر دو پنجره
     plt.show()
 
 print("\n" + "=" * 60)

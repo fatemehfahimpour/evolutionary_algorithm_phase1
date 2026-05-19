@@ -16,13 +16,14 @@ def calculate_f1_score(df, a_norm_coefficients):
         p_e ** 2) + a2_norm * p_delta_t + a3_norm * p_delta_h + a4_norm * p_light_def + a5_norm * p_n + a6_norm * p_vent_risk
     f1_min = f1_raw.min()
     f1_max = f1_raw.max()
+    f1_mean = f1_raw.mean()
 
     # جلوگیری از تقسیم بر صفر
     if f1_max == f1_min:
         return f1_raw * 0
 
     epsilon = 1e-8
-    normalized_f1 = (f1_raw - f1_min) / ((f1_max - f1_min) + epsilon)
+    normalized_f1 = (f1_mean - f1_min) / ((f1_max - f1_min) + epsilon)
 
     return 1 - normalized_f1
 
@@ -41,8 +42,9 @@ def calculate_f2_score(data, b_norm_coefficients):
 
     f2_min = f2_raw.min()
     f2_max = f2_raw.max()
+    f2_mean = f2_raw.mean()
 
-    normalized_f2 = (f2_raw - f2_min) / (f2_max - f2_min + 1e-8)
+    normalized_f2 = (f2_mean - f2_min) / (f2_max - f2_min + 1e-8)
 
     return normalized_f2
 

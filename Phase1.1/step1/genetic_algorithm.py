@@ -103,31 +103,57 @@ def initialize_population(df_clean, pop_size=50, low=0, high=10):
     return population, fitness_values
 
 
-def run_ga(df_clean, pop_size=50, generations=100, selection_method="tournament", crossover_method="arithmetic",
-           crossover_rate=0.9, mutation_rate=0.05, tournament_size=3, plot_convergence=True):
-    # first population
+def run_ga(df_clean, pop_size=50, generations=100,
+           selection_method="tournament",
+           crossover_method="arithmetic",
+           crossover_rate=0.9,
+           mutation_rate=0.05,
+           tournament_size=3,
+           elitism_rate=0.05,
+           plot_convergence=True):
+
     population, fitness_values = initialize_population(df_clean, pop_size)
+
     best_fitness_history = []
     avg_fitness_history = []
     best_f1_history = []
     best_f2_history = []
 
     for gen in range(generations):
-        best_idx = np.argmax(fitness_values)
+        # ذخیره بهترین‌ها
+        elite_count = max(1, int(elitism_rate * pop_size))
+
+        sorted_indices = np.argsort(fitness_values)[::-1]
+        elites = [population[i] for i in sorted_indices[:elite_count]]
+        elite_fitness = [fitness_values[i] for i in sorted_indices[:elite_count]]
+
+        # ثبت تاریخچه بهترین فرد
+        best_idx = sorted_indices[0]
         best_individual = population[best_idx]
+
         ai = best_individual[:6]
         bj = best_individual[6:]
+
         a_norm = normalize_coefficients(ai)
         b_norm = normalize_coefficients(bj)
+
         f1_arr = calculate_f1_score(df_clean, a_norm)
         f2_arr = calculate_f2_score(df_clean, b_norm)
+
         best_f1_history.append(np.mean(f1_arr))
         best_f2_history.append(np.mean(f2_arr))
-        best_fitness_history.append(max(fitness_values))
+        best_fitness_history.append(fitness_values[best_idx])
         avg_fitness_history.append(np.mean(fitness_values))
+
+
         new_population = []
         new_fitness = []
 
+        #  اول نخبگان اضافه میشن
+        new_population.extend(elites)
+        new_fitness.extend(elite_fitness)
+
+        # بقیه افراد تولید میشن
         while len(new_population) < pop_size:
 
             # Selection
@@ -183,9 +209,14 @@ def run_ga(df_clean, pop_size=50, generations=100, selection_method="tournament"
         plt.plot(best_fitness_history, label='Best Fitness', color='blue', linewidth=2)
         plt.xlabel('Generation')
         plt.ylabel('Fitness')
-        plt.title('Convergence Plot of Genetic Algorithm')
+        plt.title('Convergence Plot of Genetic Algorithm (With Elitism)')
         plt.legend()
         plt.grid(True, alpha=0.3)
         plt.show()
 
-    return population[best_idx], fitness_values[best_idx], best_fitness_history, avg_fitness_history, best_f1_history, best_f2_history
+    return (population[best_idx],
+            fitness_values[best_idx],
+            best_fitness_history,
+            avg_fitness_history,
+            best_f1_history,
+            best_f2_history)

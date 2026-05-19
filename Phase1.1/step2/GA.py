@@ -78,8 +78,8 @@ def gaussian_mutation(individual, mutation_rate=0.05):
 
 
 def compute_objective_ranges(population, a, b):
-    f1_vals = [f1_score(ch, a) for ch in population]
-    f2_vals = [f2_score(ch, b) for ch in population]
+    f1_vals = [calculate_f1(ch, a) for ch in population]
+    f2_vals = [calculate_f2(ch, b) for ch in population]
 
     F1_min = min(f1_vals)
     F1_max = max(f1_vals)
@@ -110,8 +110,8 @@ def run_ga_step2(a, b , F1_min , F1_max, F2_min, F2_max, pop_size=80, generation
         avg_fitness_history.append(np.mean(fitness_vals))
         best_idx = np.argmax(fitness_vals)
         best_ind = population[best_idx]
-        f1 = f1_score(best_ind, a)
-        f2 = f2_score(best_ind, b)
+        f1 = calculate_f1(best_ind, a)
+        f2 = calculate_f2(best_ind, b)
         delta = 1e-6
         f1_history.append((f1 - F1_min) / (F1_max - F1_min + delta))
         f2_history.append((f2 - F2_min) / (F2_max - F2_min + delta))
