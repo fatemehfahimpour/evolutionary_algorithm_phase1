@@ -89,9 +89,16 @@ def compute_objective_ranges(population, a, b):
     return F1_min, F1_max, F2_min, F2_max
 
 
-def run_ga_step2(a, b , F1_min , F1_max, F2_min, F2_max, pop_size=80, generations=150,
-                 selection_method='tournament', crossover_method='arithmetic',
-                 crossover_rate=0.9, mutation_rate=0.05, tournament_size=3):
+def run_ga_step2(a, b, F1_min, F1_max, F2_min, F2_max,
+                 pop_size=80, generations=150,
+                 selection_method='tournament',
+                 crossover_method='arithmetic',
+                 crossover_rate=0.9,
+                 mutation_rate=0.05,
+                 tournament_size=3,
+                 elitism_rate=0.05):
+
+    delta = 1e-5
 
     population = evaluate_population(pop_size)
     fitness_vals = [
@@ -101,24 +108,73 @@ def run_ga_step2(a, b , F1_min , F1_max, F2_min, F2_max, pop_size=80, generation
 
     best_fitness_history = []
     avg_fitness_history = []
-    f1_history = []
-    f2_history = []
+
+    # history of best individual
+    best_f1_history = []
+    best_f2_history = []
+
+    # history of population mean (this is what you called f_bar)
+    mean_f1_history = []
+    mean_f2_history = []
+
+    # normalized mean histories
+    norm_mean_f1_history = []
+    norm_mean_f2_history = []
 
     for gen in range(generations):
-        #history
-        best_fitness_history.append(max(fitness_vals))
+        # محاسبه مقادیر خام کل جمعیت
+        f1_vals = [calculate_f1(ind, a) for ind in population]
+        f2_vals = [calculate_f2(ind, b) for ind in population]
+
+        f1_bar = np.mean(f1_vals)
+        f2_bar = np.mean(f2_vals)
+
+        # نرمال‌سازی میانگین‌ها بر اساس فرمول صورت سوال
+        f1_bar_norm = (f1_bar - F1_min) / (F1_max - F1_min + delta)
+        f2_bar_norm = (f2_bar - F2_min) / (F2_max - F2_min + delta)
+
+        # اگر خواستی حتما در بازه [0,1] بماند
+        f1_bar_norm = np.clip(f1_bar_norm, 0, 1)
+        f2_bar_norm = np.clip(f2_bar_norm, 0, 1)
+
+        mean_f1_history.append(f1_bar)
+        mean_f2_history.append(f2_bar)
+        norm_mean_f1_history.append(f1_bar_norm)
+        norm_mean_f2_history.append(f2_bar_norm)
+
+        # -----------------------------
+        # تاریخچه fitness
+        # -----------------------------
+        best_fitness_history.append(np.max(fitness_vals))
         avg_fitness_history.append(np.mean(fitness_vals))
+
+        # بهترین فرد نسل
         best_idx = np.argmax(fitness_vals)
         best_ind = population[best_idx]
-        f1 = calculate_f1(best_ind, a)
-        f2 = calculate_f2(best_ind, b)
-        delta = 1e-6
-        f1_history.append((f1 - F1_min) / (F1_max - F1_min + delta))
-        f2_history.append((f2 - F2_min) / (F2_max - F2_min + delta))
 
-        new_pop = []
-        new_fit = []
+        best_f1 = calculate_f1(best_ind, a)
+        best_f2 = calculate_f2(best_ind, b)
 
+        best_f1_norm = (best_f1 - F1_min) / (F1_max - F1_min + delta)
+        best_f2_norm = (best_f2 - F2_min) / (F2_max - F2_min + delta)
+
+        best_f1_norm = np.clip(best_f1_norm, 0, 1)
+        best_f2_norm = np.clip(best_f2_norm, 0, 1)
+
+        best_f1_history.append(best_f1_norm)
+        best_f2_history.append(best_f2_norm)
+
+        # ELITISM
+        elite_count = max(1, int(pop_size * elitism_rate))
+        sorted_idx = np.argsort(fitness_vals)[::-1]
+
+        elites = [population[i].copy() for i in sorted_idx[:elite_count]]
+        elites_fit = [fitness_vals[i] for i in sorted_idx[:elite_count]]
+
+        new_pop = elites.copy()
+        new_fit = elites_fit.copy()
+
+        # تولید بقیه جمعیت
         while len(new_pop) < pop_size:
             if selection_method == 'tournament':
                 p1 = tournament_selection(population, fitness_vals, tournament_size)
@@ -154,4 +210,78 @@ def run_ga_step2(a, b , F1_min , F1_max, F2_min, F2_max, pop_size=80, generation
     best_individual = population[best_idx]
     best_fitness = fitness_vals[best_idx]
 
-    return best_individual, best_fitness, best_fitness_history, avg_fitness_history, f1_history, f2_history
+    return (
+        best_individual,
+        best_fitness,
+        best_fitness_history,
+        avg_fitness_history,
+        best_f1_history,
+        best_f2_history,
+    )
+
+# def run_ga_step2(a, b , F1_min , F1_max, F2_min, F2_max, pop_size=80, generations=150,
+#                  selection_method='tournament', crossover_method='arithmetic',
+#                  crossover_rate=0.9, mutation_rate=0.05, tournament_size=3):
+#
+#     population = evaluate_population(pop_size)
+#     fitness_vals = [
+#         fitness_function(ind, a, b, F1_min, F1_max, F2_min, F2_max)
+#         for ind in population
+#     ]
+#
+#     best_fitness_history = []
+#     avg_fitness_history = []
+#     f1_history = []
+#     f2_history = []
+#
+#     for gen in range(generations):
+#         #history
+#         best_fitness_history.append(max(fitness_vals))
+#         avg_fitness_history.append(np.mean(fitness_vals))
+#         best_idx = np.argmax(fitness_vals)
+#         best_ind = population[best_idx]
+#         f1 = calculate_f1(best_ind, a)
+#         f2 = calculate_f2(best_ind, b)
+#         delta = 1e-6
+#         f1_history.append((f1 - F1_min) / (F1_max - F1_min + delta))
+#         f2_history.append((f2 - F2_min) / (F2_max - F2_min + delta))
+#
+#         new_pop = []
+#         new_fit = []
+#
+#         while len(new_pop) < pop_size:
+#             if selection_method == 'tournament':
+#                 p1 = tournament_selection(population, fitness_vals, tournament_size)
+#                 p2 = tournament_selection(population, fitness_vals, tournament_size)
+#             else:
+#                 p1 = roulette_wheel_selection(population, fitness_vals)
+#                 p2 = roulette_wheel_selection(population, fitness_vals)
+#
+#             if random.random() < crossover_rate:
+#                 if crossover_method == 'arithmetic':
+#                     c1, c2 = arithmetic_crossover(p1, p2)
+#                 else:
+#                     c1, c2 = uniform_crossover(p1, p2)
+#             else:
+#                 c1, c2 = p1.copy(), p2.copy()
+#
+#             c1 = gaussian_mutation(c1, mutation_rate)
+#             c2 = gaussian_mutation(c2, mutation_rate)
+#
+#             fit1 = fitness_function(c1, a, b, F1_min, F1_max, F2_min, F2_max)
+#             fit2 = fitness_function(c2, a, b, F1_min, F1_max, F2_min, F2_max)
+#
+#             new_pop.append(c1)
+#             new_fit.append(fit1)
+#             if len(new_pop) < pop_size:
+#                 new_pop.append(c2)
+#                 new_fit.append(fit2)
+#
+#         population = new_pop
+#         fitness_vals = new_fit
+#
+#     best_idx = np.argmax(fitness_vals)
+#     best_individual = population[best_idx]
+#     best_fitness = fitness_vals[best_idx]
+#
+#     return best_individual, best_fitness, best_fitness_history, avg_fitness_history, f1_history, f2_history
