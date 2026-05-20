@@ -32,42 +32,6 @@ bj = best_chrom[6:]
 a_norm = normalize_coefficients(ai)
 b_norm = normalize_coefficients(bj)
 
-# -----------------بازه ی f1 , f2 از دیتاست -----------------
-# این بازه‌ها برای مرحله 3 استفاده نمی‌شوند - فقط برای مقایسه نگه داشته شده‌اند
-f1_dataset = []
-f2_dataset = []
-
-for idx, row in df_clean.iterrows():
-    p_e = max(0, row['E'] - 100)
-    p_delta_t = abs(row['T_in'] - row['T_out'])
-    p_delta_h = abs(row['H_in'] - row['H_out'])
-    p_light_def = max(0, 500 - (row['L'] + row['Solar']))
-    p_n = np.sqrt(row['N'])
-    p_vent_risk = max(0, row['N'] * row['Wind'] - 50)
-    f1_raw = (a_norm[0] * np.log1p(p_e ** 2) +
-              a_norm[1] * p_delta_t +
-              a_norm[2] * p_delta_h +
-              a_norm[3] * p_light_def +
-              a_norm[4] * p_n +
-              a_norm[5] * p_vent_risk)
-    f1_dataset.append(f1_raw)
-
-    f2_raw = (b_norm[0] * row['S_T'] +
-              b_norm[1] * row['S_H'] +
-              b_norm[2] * row['S_L'] +
-              b_norm[3] * row['S_C'] -
-              b_norm[4] * row['P_N'])
-    f2_dataset.append(f2_raw)
-
-F1_MIN_dataset = np.min(f1_dataset)
-F1_MAX_dataset = np.max(f1_dataset)
-F2_MIN_dataset = np.min(f2_dataset)
-F2_MAX_dataset = np.max(f2_dataset)
-
-print(f"F1_MIN از دیتاست: {F1_MIN_dataset:.6f}, F1_MAX از دیتاست: {F1_MAX_dataset:.6f}")
-print(f"F2_MIN از دیتاست: {F2_MIN_dataset:.6f}, F2_MAX از دیتاست: {F2_MAX_dataset:.6f}")
-
-
 # ----------------توابع کمکی برای محاسبه بازه مرحله 3-----------------
 def calculate_raw_f1_f2_for_population(fitness_obj, population):
     """محاسبه مقادیر خام f1 و f2 برای یک جمعیت"""

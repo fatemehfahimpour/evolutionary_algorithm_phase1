@@ -112,16 +112,23 @@ class GA:
         best_f2_norm_history = []
 
         for gen in range(self.generations):
+            # 1. پیدا کردن بهترین فرد نسل فعلی
             best_idx = np.argmin(costs)
-            best_cost_history.append(costs[best_idx])
-            avg_cost_history.append(np.mean(costs))
+            best_individual = population[best_idx].copy()  # نگه داشتن بهترین
+            best_cost = costs[best_idx]
 
-            # ذخیره f1_norm و f2_norm بهترین فرد این نسل
+            # ذخیره تاریخچه
+            best_cost_history.append(best_cost)
+            avg_cost_history.append(np.mean(costs))
             best_f1_norm_history.append(f1_norms[best_idx])
             best_f2_norm_history.append(f2_norms[best_idx])
 
             new_population = []
 
+            # 2. پیاده‌سازی الیتیسم: بهترین فرد مستقیماً به نسل بعد می‌رود
+            new_population.append(best_individual)
+
+            # 3. تولید بقیه جمعیت
             while len(new_population) < self.pop_size:
                 if self.selection_method == 'tournament':
                     parent1 = self.tournament(population, costs)
@@ -145,32 +152,5 @@ class GA:
             costs, f1_norms, f2_norms = self.evaluate_population(population)
 
         best_idx = np.argmin(costs)
-        best_individual = population[best_idx]
-        best_cost = costs[best_idx]
-
-        return best_individual, best_cost, best_cost_history, avg_cost_history, best_f1_norm_history, best_f2_norm_history
-
-    def run_multiple(self, num_runs=5):  # میانگین 5بار اجرا
-        best_individuals = []
-        best_costs = []
-        all_histories = []
-        for run in range(num_runs):
-            ind, cost, hist, _ = self.run()
-            best_individuals.append(ind)
-            best_costs.append(cost)
-            all_histories.append(hist)
-        mean_cost = np.mean(best_costs)
-        std_cost = np.std(best_costs)
-
-        global_best_idx = np.argmin(best_costs)
-        global_best_individual = best_individuals[global_best_idx]
-        global_best_cost = best_costs[global_best_idx]
-        return {
-            'best_individual': global_best_individual,
-            'best_cost': global_best_cost,
-            'mean_cost': mean_cost,
-            'std_cost': std_cost,
-            'all_costs': best_costs,
-            'all_individuals': best_individuals,
-            'histories': all_histories
-        }
+        return population[best_idx], costs[
+            best_idx], best_cost_history, avg_cost_history, best_f1_norm_history, best_f2_norm_history
