@@ -5,7 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$/Phase1.1" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Phase1.1/step1" isTestSource="false" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.13" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.12 (7)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PyDocumentationSettings">
